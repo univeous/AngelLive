@@ -22,7 +22,6 @@ jobs:
 
       - name: Select Xcode
         run: |
-          # 优先选择最新的 Xcode 16.x
           for ver in 16.3 16.2 16.1 16.0; do
             XCODE_PATH="/Applications/Xcode_${ver}.app"
             if [ -d "$XCODE_PATH" ]; then
@@ -30,14 +29,26 @@ jobs:
               break
             fi
           done
+          # 激活开发者工具，确保 iOS platform 可用
+          sudo xcodebuild -runFirstLaunch
           xcodebuild -version
+          xcodebuild -showsdks | grep -i ios
+
+      - name: Cache SPM packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/AngelLive-*/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
 
       - name: Resolve SPM Dependencies
         run: |
           xcodebuild -resolvePackageDependencies \
             -workspace AngelLive.xcworkspace \
-            -scheme AngelLive \
-            -destination "generic/platform=iOS"
+            -scheme AngelLive
 
       - name: Build Archive (Unsigned)
         run: |
@@ -45,7 +56,7 @@ jobs:
             -workspace AngelLive.xcworkspace \
             -scheme AngelLive \
             -configuration Release \
-            -destination "generic/platform=iOS" \
+            -sdk iphoneos \
             -archivePath "$RUNNER_TEMP/AngelLive.xcarchive" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
