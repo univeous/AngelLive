@@ -26,11 +26,20 @@ jobs:
         with:
           xcode-version: latest
 
-      - name: Register iOS platform
-        run: sudo xcodebuild -runFirstLaunch
-
       - name: Show Xcode version
-        run: xcodebuild -version && xcodebuild -showsdks | grep -i ios
+        run: xcodebuild -version
+
+      - name: Cache iOS platform
+        id: cache-ios-platform
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/Platforms
+          key: ios-platform-${{ hashFiles('/Applications/Xcode*.app/Contents/Developer/usr/bin/xcodebuild') }}
+          save-always: true
+
+      - name: Download iOS platform
+        if: steps.cache-ios-platform.outputs.cache-hit != 'true'
+        run: xcodebuild -downloadPlatform iOS
 
       - name: Cache SPM packages
         uses: actions/cache@v4
@@ -50,18 +59,12 @@ jobs:
 
       - name: Build (Unsigned)
         run: |
-          # 用 xcrun 找到 iOS SDK 实际路径，通过 SDKROOT build setting
-          # 绕过 -destination 的 platform 安装校验
-          IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-          echo "Using iOS SDK: $IOS_SDK"
           xcodebuild build \
             -workspace AngelLive.xcworkspace \
             -scheme AngelLive \
             -configuration Release \
+            -destination "generic/platform=iOS" \
             -derivedDataPath "$DERIVED_DATA_PATH" \
-            SDKROOT="$IOS_SDK" \
-            ARCHS=arm64 \
-            ONLY_ACTIVE_ARCH=NO \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
