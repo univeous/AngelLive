@@ -11,6 +11,10 @@ jobs:
   build-ios:
     name: Build iOS IPA
     runs-on: macos-15
+    env:
+      # TracyPlayer/FFmpegKit 和 TracyPlayer/KSPlayer 仓库不存在，
+      # USE_VLC=1 时 Package.swift 会跳过它们，改用 VLCKitSPM
+      USE_VLC: "1"
 
     steps:
       - name: Checkout
