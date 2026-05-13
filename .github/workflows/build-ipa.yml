@@ -10,7 +10,7 @@ on:
 jobs:
   build-ios:
     name: Build iOS IPA
-    runs-on: macos-latest
+    runs-on: macos-26
     env:
       # TracyPlayer/FFmpegKit 和 TracyPlayer/KSPlayer 仓库不存在，
       # USE_VLC=1 时 Package.swift 会跳过它们，改用 VLCKitSPM
@@ -49,8 +49,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            OTHER_SWIFT_FLAGS="-enable-experimental-feature IsolatedDeinit"
+            PROVISIONING_PROFILE_SPECIFIER=""
 
       - name: Package IPA
         run: |
