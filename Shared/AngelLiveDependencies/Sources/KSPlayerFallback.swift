@@ -164,6 +164,7 @@ open class KSOptions {
     public var formatContextOptions: [String: Any] = [:]
     public var decodeType: KSDecodeType = .software
     public var canStartPictureInPictureAutomaticallyFromInline: Bool = false
+    public var playerTypes: [MediaPlayerProtocol.Type] = []
 
     required public init() {}
 
@@ -352,6 +353,10 @@ public class KSPlayerLayerBase: NSObject {
     }
 
     public func resetPlayer() {
+        stop()
+    }
+
+    public func reset() {
         stop()
     }
 
