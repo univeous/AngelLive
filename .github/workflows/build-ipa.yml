@@ -56,7 +56,7 @@ jobs:
             -workspace AngelLive.xcworkspace \
             -scheme AngelLive \
             -configuration Release \
-            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
             -archivePath "$RUNNER_TEMP/AngelLive.xcarchive" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
