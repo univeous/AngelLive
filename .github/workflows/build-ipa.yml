@@ -26,8 +26,11 @@ jobs:
         with:
           xcode-version: latest
 
+      - name: Register iOS platform
+        run: sudo xcodebuild -runFirstLaunch
+
       - name: Show Xcode version
-        run: xcodebuild -version
+        run: xcodebuild -version && xcodebuild -showsdks | grep -i ios
 
       - name: Cache SPM packages
         uses: actions/cache@v4
