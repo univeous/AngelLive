@@ -165,7 +165,7 @@ open class KSOptions {
     public var decodeType: KSDecodeType = .software
     public var canStartPictureInPictureAutomaticallyFromInline: Bool = false
 
-    public init() {}
+    required public init() {}
 
     open func updateVideo(refreshRate _: Float, isDovi _: Bool, formatDescription _: CMFormatDescription) {}
 
