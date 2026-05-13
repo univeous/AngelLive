@@ -29,17 +29,23 @@ jobs:
               break
             fi
           done
-          # 激活开发者工具，确保 iOS platform 可用
-          sudo xcodebuild -runFirstLaunch
           xcodebuild -version
-          xcodebuild -showsdks | grep -i ios
+
+      - name: Cache iOS platform
+        id: cache-ios-platform
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/Platforms
+          key: xcode-16.3-ios-platform-18.4
+
+      - name: Download iOS platform
+        if: steps.cache-ios-platform.outputs.cache-hit != 'true'
+        run: xcodebuild -downloadPlatform iOS
 
       - name: Cache SPM packages
         uses: actions/cache@v4
         with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/Library/Developer/Xcode/DerivedData/AngelLive-*/SourcePackages
+          path: ~/Library/Caches/org.swift.swiftpm
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-
