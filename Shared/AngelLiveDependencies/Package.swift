@@ -108,7 +108,10 @@ let package = Package(
         .target(
             name: "AngelLiveDependencies",
             dependencies: targetDependencies,
-            path: "Sources"
+            path: "Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
     ]
 )

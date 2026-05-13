@@ -21,34 +21,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select latest Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest
-
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Cache iOS platform
-        id: cache-ios-platform
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/Platforms
-          key: ios-platform-${{ hashFiles('/Applications/Xcode*.app/Contents/Developer/usr/bin/xcodebuild') }}
-          save-always: true
-
-      - name: Download iOS platform
-        if: steps.cache-ios-platform.outputs.cache-hit != 'true'
-        run: xcodebuild -downloadPlatform iOS
-
       - name: Cache SPM packages
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
+        id: spm-cache
         with:
           path: ${{ github.workspace }}/DerivedData/SourcePackages
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-
-          save-always: true
 
       - name: Resolve SPM Dependencies
         run: |
@@ -56,6 +39,13 @@ jobs:
             -workspace AngelLive.xcworkspace \
             -scheme AngelLive \
             -derivedDataPath "$DERIVED_DATA_PATH"
+
+      - name: Save SPM cache
+        if: steps.spm-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/DerivedData/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
 
       - name: Build (Unsigned)
         run: |
