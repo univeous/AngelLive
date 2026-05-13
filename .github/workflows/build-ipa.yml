@@ -10,7 +10,7 @@ on:
 jobs:
   build-ios:
     name: Build iOS IPA
-    runs-on: macos-15
+    runs-on: macos-latest
     env:
       # TracyPlayer/FFmpegKit 和 TracyPlayer/KSPlayer 仓库不存在，
       # USE_VLC=1 时 Package.swift 会跳过它们，改用 VLCKitSPM
@@ -20,16 +20,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: |
-          for ver in 16.3 16.2 16.1 16.0; do
-            XCODE_PATH="/Applications/Xcode_${ver}.app"
-            if [ -d "$XCODE_PATH" ]; then
-              sudo xcode-select -s "$XCODE_PATH"
-              break
-            fi
-          done
-          xcodebuild -version
+      - name: Show Xcode version
+        run: xcodebuild -version
 
       - name: Cache SPM packages
         uses: actions/cache@v4
@@ -45,18 +37,14 @@ jobs:
             -workspace AngelLive.xcworkspace \
             -scheme AngelLive
 
-      - name: Build Archive (Unsigned)
+      - name: Build (Unsigned)
         run: |
-          # 不使用 -destination（会触发平台安装检查），
-          # 改用 SDKROOT 作为 build setting 直接指向已安装的 SDK
-          xcodebuild archive \
+          xcodebuild build \
             -workspace AngelLive.xcworkspace \
             -scheme AngelLive \
             -configuration Release \
-            -archivePath "$RUNNER_TEMP/AngelLive.xcarchive" \
-            SDKROOT=iphoneos18.4 \
-            ARCHS=arm64 \
-            ONLY_ACTIVE_ARCH=NO \
+            -sdk iphoneos \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
@@ -65,13 +53,12 @@ jobs:
 
       - name: Package IPA
         run: |
-          APP_PATH=$(find "$RUNNER_TEMP/AngelLive.xcarchive/Products" \
-            -name "*.app" -maxdepth 5 | head -1)
+          APP_PATH=$(find "$RUNNER_TEMP/DerivedData" -name "AngelLive.app" -not -path "*/intermediates/*" | head -1)
           echo "Found .app at: $APP_PATH"
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           cp -r "$APP_PATH" "$RUNNER_TEMP/ipa/Payload/"
           cd "$RUNNER_TEMP/ipa"
-          zip -r "AngelLive-unsigned.ipa" Payload
+          zip -q -r "AngelLive-unsigned.ipa" Payload
           echo "IPA size: $(du -sh AngelLive-unsigned.ipa | cut -f1)"
 
       - name: Upload IPA
