@@ -39,6 +39,7 @@ jobs:
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-
+          save-always: true
 
       - name: Resolve SPM Dependencies
         run: |
