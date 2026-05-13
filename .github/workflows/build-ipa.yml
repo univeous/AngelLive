@@ -15,10 +15,16 @@ jobs:
       # TracyPlayer/FFmpegKit 和 TracyPlayer/KSPlayer 仓库不存在，
       # USE_VLC=1 时 Package.swift 会跳过它们，改用 VLCKitSPM
       USE_VLC: "1"
+      DERIVED_DATA_PATH: ${{ github.workspace }}/DerivedData
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
 
       - name: Show Xcode version
         run: xcodebuild -version
@@ -26,7 +32,7 @@ jobs:
       - name: Cache SPM packages
         uses: actions/cache@v4
         with:
-          path: ~/Library/Caches/org.swift.swiftpm
+          path: ${{ github.workspace }}/DerivedData/SourcePackages
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-
@@ -35,7 +41,8 @@ jobs:
         run: |
           xcodebuild -resolvePackageDependencies \
             -workspace AngelLive.xcworkspace \
-            -scheme AngelLive
+            -scheme AngelLive \
+            -derivedDataPath "$DERIVED_DATA_PATH"
 
       - name: Build (Unsigned)
         run: |
@@ -44,7 +51,7 @@ jobs:
             -scheme AngelLive \
             -configuration Release \
             -sdk iphoneos \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
@@ -53,7 +60,8 @@ jobs:
 
       - name: Package IPA
         run: |
-          APP_PATH=$(find "$RUNNER_TEMP/DerivedData" -name "AngelLive.app" -not -path "*/intermediates/*" | head -1)
+          APP_PATH=$(find "$DERIVED_DATA_PATH" -name "AngelLive.app" \
+            -not -path "*/intermediates/*" | head -1)
           echo "Found .app at: $APP_PATH"
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           cp -r "$APP_PATH" "$RUNNER_TEMP/ipa/Payload/"
