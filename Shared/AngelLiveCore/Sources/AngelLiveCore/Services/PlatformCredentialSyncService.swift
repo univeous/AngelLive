@@ -169,6 +169,9 @@ public final class PlatformCredentialSyncService: ObservableObject {
 
     /// 同步所有已认证平台到 CloudKit
     public func syncAllToICloud() async {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         let sessions = await collectAllPlatformSessions()
         let sessionsByPluginId: [String: SyncedCookieData] = sessions.reduce(into: [:]) { result, session in
             guard let pluginId = session.platformId else { return }
@@ -219,6 +222,9 @@ public final class PlatformCredentialSyncService: ObservableObject {
 
     /// 从 CloudKit 同步所有平台
     public func syncAllFromICloud() async {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         isSyncing = true
         defer { isSyncing = false }
 
@@ -271,6 +277,9 @@ public final class PlatformCredentialSyncService: ObservableObject {
     }
 
     public func fetchCloudSyncPreview() async -> ICloudSyncPreview {
+        #if DISABLE_ICLOUD
+        return ICloudSyncPreview(latestTime: nil, platformNames: [])
+        #endif
         let container = CKContainer(identifier: CloudCookieFields.containerIdentifier)
         let database = container.privateCloudDatabase
 
@@ -300,6 +309,9 @@ public final class PlatformCredentialSyncService: ObservableObject {
     /// 清理 CloudKit 中保存的所有平台登录信息，不影响本地登录态。
     @discardableResult
     public func clearAllICloudSessions() async -> Int {
+        #if DISABLE_ICLOUD
+        return 0
+        #endif
         isSyncing = true
         defer { isSyncing = false }
 
@@ -567,6 +579,9 @@ public final class PlatformCredentialSyncService: ObservableObject {
         loggedInByPluginId[pluginId] = false
 
         if clearICloud {
+            #if DISABLE_ICLOUD
+            return
+            #endif
             let container = CKContainer(identifier: CloudCookieFields.containerIdentifier)
             let database = container.privateCloudDatabase
             let recordName = CloudCookieFields.sessionRecordName(for: pluginId)

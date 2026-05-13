@@ -15,6 +15,7 @@ jobs:
       # TracyPlayer/FFmpegKit 和 TracyPlayer/KSPlayer 仓库不存在，
       # USE_VLC=1 时 Package.swift 会跳过它们，改用 VLCKitSPM
       USE_VLC: "1"
+      DISABLE_ICLOUD: "1"
       DERIVED_DATA_PATH: ${{ github.workspace }}/DerivedData
 
     steps:

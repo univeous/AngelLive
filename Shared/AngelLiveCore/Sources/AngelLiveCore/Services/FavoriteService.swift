@@ -23,6 +23,9 @@ private enum CloudFavoriteFields {
 public final class FavoriteService: NSObject {
     
     public static func saveRecord(liveModel: LiveModel) async throws {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         let rec = CKRecord(recordType: "favorite_streamers")
         rec.setValue(liveModel.roomId, forKey: CloudFavoriteFields.roomId)
         rec.setValue(liveModel.userId, forKey: CloudFavoriteFields.userId)
@@ -36,6 +39,9 @@ public final class FavoriteService: NSObject {
     }
     
     public static func searchRecord(roomId: String) async throws -> [LiveModel] {
+        #if DISABLE_ICLOUD
+        return []
+        #endif
         let container = CKContainer(identifier: CloudFavoriteFields.containerIdentifier)
         let database = container.privateCloudDatabase
         let predicate = NSPredicate(format: " \(CloudFavoriteFields.roomId) = '\(roomId)' ")
@@ -61,6 +67,9 @@ public final class FavoriteService: NSObject {
     }
     
     public static func searchRecord() async throws -> [LiveModel] {
+        #if DISABLE_ICLOUD
+        return []
+        #endif
         let container = CKContainer(identifier: CloudFavoriteFields.containerIdentifier)
         let database = container.privateCloudDatabase
         let query = CKQuery(recordType: "favorite_streamers", predicate: NSPredicate(value: true))
@@ -99,6 +108,9 @@ public final class FavoriteService: NSObject {
     }
     
     public static func deleteRecord(liveModel: LiveModel) async throws {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         let container = CKContainer(identifier: CloudFavoriteFields.containerIdentifier)
         let database = container.privateCloudDatabase
         let trimmedUserId = liveModel.userId.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -125,6 +137,9 @@ public final class FavoriteService: NSObject {
     }
     
     public static func getCloudState() async -> String {
+        #if DISABLE_ICLOUD
+        return "iCloud已禁用"
+        #endif
         // 1. 检查 CloudKit 容器标识符
         guard !CloudFavoriteFields.containerIdentifier.isEmpty else {
             return "CloudKit 配置错误：容器标识符为空"

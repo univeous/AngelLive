@@ -1,7 +1,10 @@
 // swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import Foundation
 import PackageDescription
+
+private let disableICloud = ProcessInfo.processInfo.environment["DISABLE_ICLOUD"] == "1"
 
 let package = Package(
     name: "AngelLiveCore",
@@ -38,7 +41,7 @@ let package = Package(
             path: "Sources",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
-            ],
+            ] + (disableICloud ? [.define("DISABLE_ICLOUD")] : []),
             linkerSettings: [
                 .linkedFramework("JavaScriptCore")
             ]

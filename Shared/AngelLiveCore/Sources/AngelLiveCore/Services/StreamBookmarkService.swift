@@ -100,6 +100,9 @@ public final class StreamBookmarkService {
 
     /// 从 CloudKit 同步到本地
     public func syncFromCloud() async {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         isLoading = true
         defer { isLoading = false }
 
@@ -120,6 +123,9 @@ public final class StreamBookmarkService {
     }
 
     private func saveToCloud(_ bookmark: StreamBookmark) async throws {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         let record = CKRecord(recordType: CloudStreamBookmarkFields.recordType)
         record.setValue(bookmark.id, forKey: CloudStreamBookmarkFields.bookmarkId)
         record.setValue(bookmark.title, forKey: CloudStreamBookmarkFields.title)
@@ -132,6 +138,9 @@ public final class StreamBookmarkService {
     }
 
     private func deleteFromCloud(_ bookmark: StreamBookmark) async throws {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         let predicate = NSPredicate(format: "%K = %@", CloudStreamBookmarkFields.bookmarkId, bookmark.id)
         let query = CKQuery(recordType: CloudStreamBookmarkFields.recordType, predicate: predicate)
         let results = try await database.records(matching: query)
@@ -147,6 +156,9 @@ public final class StreamBookmarkService {
     }
 
     private func fetchAllFromCloud() async throws -> [StreamBookmark] {
+        #if DISABLE_ICLOUD
+        return []
+        #endif
         let query = CKQuery(recordType: CloudStreamBookmarkFields.recordType, predicate: NSPredicate(value: true))
         let results = try await database.records(matching: query, resultsLimit: 99999)
 

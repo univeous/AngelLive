@@ -49,6 +49,9 @@ public final class PluginSourceSyncService {
 
     /// 将插件源 URL 列表同步到 CloudKit
     public static func syncToCloudStatic(sourceURLs: [String]) async {
+        #if DISABLE_ICLOUD
+        return
+        #endif
         let container = CKContainer(identifier: CloudPluginSourceFields.containerIdentifier)
         let database = container.privateCloudDatabase
         let recordID = CKRecord.ID(recordName: CloudPluginSourceFields.fixedRecordName)
@@ -89,6 +92,10 @@ public final class PluginSourceSyncService {
     /// 检查 CloudKit 中是否有已保存的插件源 URL
     @MainActor
     public func checkCloudForSources() async {
+        #if DISABLE_ICLOUD
+        hasSyncedSources = false
+        return
+        #endif
         guard !userDismissedPrompt else {
             hasSyncedSources = false
             return
